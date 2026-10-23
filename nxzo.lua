@@ -1,18 +1,19 @@
 -- Nxzo's Script
 -- Roblox Studio LocalScript
 -- Place in StarterPlayer > StarterPlayerScripts.
--- This is a UI-only RageMode toggle; it does not automate attacks or damage players.
+-- Rage tab contains a visual ON/OFF toggle only; it does not automate attacks.
 
-local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
+local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local oldGui = playerGui:FindFirstChild("NxzosScriptGui")
 if oldGui then oldGui:Destroy() end
 
-local ACCESS_KEY = "NXZO-2026" -- Change this placeholder to your preferred display key.
+local ACCESS_KEY = "NXZO-2026" -- Replace with your desired key.
+local unlocked = false
 local rageEnabled = false
+local activeCategory = "Rage"
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "NxzosScriptGui"
@@ -22,28 +23,28 @@ gui.Parent = playerGui
 
 local main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.new(0, 340, 0, 300)
-main.Position = UDim2.new(0.5, -170, 0.5, -150)
-main.BackgroundColor3 = Color3.fromRGB(22, 18, 32)
+main.Size = UDim2.new(0, 470, 0, 315)
+main.Position = UDim2.new(0.5, -235, 0.5, -157)
+main.BackgroundColor3 = Color3.fromRGB(19, 17, 27)
 main.BorderSizePixel = 0
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(145, 75, 220)
-stroke.Thickness = 1.5
-stroke.Parent = main
+local outline = Instance.new("UIStroke")
+outline.Color = Color3.fromRGB(139, 75, 204)
+outline.Thickness = 1.5
+outline.Parent = main
 
 local top = Instance.new("Frame")
 top.Name = "TopBar"
 top.Size = UDim2.new(1, 0, 0, 42)
-top.BackgroundColor3 = Color3.fromRGB(43, 27, 61)
+top.BackgroundColor3 = Color3.fromRGB(38, 27, 52)
 top.BorderSizePixel = 0
 top.Parent = main
 Instance.new("UICorner", top).CornerRadius = UDim.new(0, 12)
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -52, 1, 0)
+title.Size = UDim2.new(1, -50, 1, 0)
 title.Position = UDim2.new(0, 14, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "Nxzo's Script"
@@ -67,107 +68,142 @@ close.Parent = top
 Instance.new("UICorner", close).CornerRadius = UDim.new(0, 8)
 close.MouseButton1Click:Connect(function() gui:Destroy() end)
 
-local function makeLabel(name, text, size, position, textSize, color)
-    local label = Instance.new("TextLabel")
-    label.Name = name
-    label.Size = size
-    label.Position = position
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = color or Color3.fromRGB(230, 220, 242)
-    label.TextSize = textSize
-    label.Font = Enum.Font.Gotham
-    label.TextWrapped = true
-    label.Parent = main
-    return label
+local function label(parent, name, text, size, position, textSize, color)
+    local item = Instance.new("TextLabel")
+    item.Name = name
+    item.Size = size
+    item.Position = position
+    item.BackgroundTransparency = 1
+    item.Text = text
+    item.TextColor3 = color or Color3.fromRGB(225, 215, 238)
+    item.TextSize = textSize
+    item.Font = Enum.Font.Gotham
+    item.TextWrapped = true
+    item.Parent = parent
+    return item
 end
 
-local discordLabel = makeLabel(
-    "DiscordLabel", "dc: gothangelz",
-    UDim2.new(1, -24, 0, 25), UDim2.new(0, 12, 0, 52), 16,
-    Color3.fromRGB(205, 160, 255)
-)
-discordLabel.Font = Enum.Font.GothamBold
+local function button(parent, name, text, size, position)
+    local item = Instance.new("TextButton")
+    item.Name = name
+    item.Size = size
+    item.Position = position
+    item.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
+    item.BorderSizePixel = 0
+    item.Text = text
+    item.TextColor3 = Color3.fromRGB(245, 238, 255)
+    item.TextSize = 14
+    item.Font = Enum.Font.GothamSemibold
+    item.Parent = parent
+    Instance.new("UICorner", item).CornerRadius = UDim.new(0, 8)
+    return item
+end
 
-makeLabel(
-    "FriendRequestNote",
+local sidebar = Instance.new("Frame")
+sidebar.Name = "Categories"
+sidebar.Size = UDim2.new(0, 132, 1, -54)
+sidebar.Position = UDim2.new(0, 10, 0, 49)
+sidebar.BackgroundColor3 = Color3.fromRGB(27, 23, 37)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = main
+Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0, 9)
+
+label(sidebar, "CategoryTitle", "CATEGORIES", UDim2.new(1, -16, 0, 25),
+    UDim2.new(0, 8, 0, 8), 11, Color3.fromRGB(167, 137, 192))
+
+local rageCategory = button(sidebar, "RageCategory", "Rage", UDim2.new(1, -16, 0, 38),
+    UDim2.new(0, 8, 0, 40))
+rageCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
+
+local content = Instance.new("Frame")
+content.Name = "CategoryContent"
+content.Size = UDim2.new(1, -160, 1, -54)
+content.Position = UDim2.new(0, 150, 0, 49)
+content.BackgroundColor3 = Color3.fromRGB(27, 23, 37)
+content.BorderSizePixel = 0
+content.Parent = main
+Instance.new("UICorner", content).CornerRadius = UDim.new(0, 9)
+
+local discord = label(content, "DiscordLabel", "dc: gothangelz",
+    UDim2.new(1, -24, 0, 24), UDim2.new(0, 12, 0, 10), 15,
+    Color3.fromRGB(205, 160, 255))
+discord.Font = Enum.Font.GothamBold
+
+label(content, "FriendRequestNote",
     "before sending friend request explain why you wanna add so i will add you",
-    UDim2.new(1, -28, 0, 48), UDim2.new(0, 14, 0, 79), 12
-)
+    UDim2.new(1, -24, 0, 42), UDim2.new(0, 12, 0, 35), 11)
 
 local keyBox = Instance.new("TextBox")
 keyBox.Name = "KeyInput"
-keyBox.Size = UDim2.new(1, -28, 0, 40)
-keyBox.Position = UDim2.new(0, 14, 0, 137)
-keyBox.BackgroundColor3 = Color3.fromRGB(38, 30, 50)
+keyBox.Size = UDim2.new(1, -24, 0, 36)
+keyBox.Position = UDim2.new(0, 12, 0, 86)
+keyBox.BackgroundColor3 = Color3.fromRGB(39, 32, 49)
 keyBox.BorderSizePixel = 0
 keyBox.PlaceholderText = "Enter key..."
 keyBox.Text = ""
 keyBox.ClearTextOnFocus = false
 keyBox.TextColor3 = Color3.new(1, 1, 1)
-keyBox.PlaceholderColor3 = Color3.fromRGB(170, 155, 185)
-keyBox.TextSize = 14
+keyBox.PlaceholderColor3 = Color3.fromRGB(165, 151, 181)
+keyBox.TextSize = 13
 keyBox.Font = Enum.Font.Gotham
-keyBox.Parent = main
-Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 8)
+keyBox.Parent = content
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 7)
 
-local function makeButton(name, text, y)
-    local button = Instance.new("TextButton")
-    button.Name = name
-    button.Size = UDim2.new(1, -28, 0, 40)
-    button.Position = UDim2.new(0, 14, 0, y)
-    button.BackgroundColor3 = Color3.fromRGB(100, 52, 145)
-    button.BorderSizePixel = 0
-    button.Text = text
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.TextSize = 14
-    button.Font = Enum.Font.GothamSemibold
-    button.Parent = main
-    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
-    return button
+local status = label(content, "Status", "Enter the key to unlock Rage controls.",
+    UDim2.new(1, -24, 0, 30), UDim2.new(0, 12, 0, 130), 11,
+    Color3.fromRGB(193, 178, 209))
+
+local unlockButton = button(content, "UnlockButton", "Unlock",
+    UDim2.new(1, -24, 0, 36), UDim2.new(0, 12, 0, 164))
+
+local rageToggle = button(content, "RageModeToggle", "RageMode: OFF",
+    UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 164))
+rageToggle.Visible = false
+
+local function showRageCategory()
+    activeCategory = "Rage"
+    rageCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
+    status.Visible = true
+    keyBox.Visible = not unlocked
+    unlockButton.Visible = not unlocked
+    rageToggle.Visible = unlocked
+    if unlocked then
+        status.Position = UDim2.new(0, 12, 0, 130)
+        status.Text = "Rage tab selected. Toggle is visual-only."
+    else
+        status.Text = "Enter the key to unlock Rage controls."
+    end
 end
 
-local status = makeLabel(
-    "Status", "Enter the key to unlock the panel.",
-    UDim2.new(1, -28, 0, 25), UDim2.new(0, 14, 0, 184), 12,
-    Color3.fromRGB(200, 185, 215)
-)
-
-local unlockButton = makeButton("UnlockButton", "Unlock", 213)
-local rageButton = makeButton("RageModeToggle", "RageMode: OFF", 213)
-rageButton.Visible = false
+rageCategory.MouseButton1Click:Connect(showRageCategory)
 
 unlockButton.MouseButton1Click:Connect(function()
     if keyBox.Text == ACCESS_KEY then
+        unlocked = true
         keyBox.Visible = false
         unlockButton.Visible = false
-        status.Position = UDim2.new(0, 14, 0, 184)
-        status.Text = "Panel unlocked. Toggle is UI-only."
-        rageButton.Visible = true
+        rageToggle.Visible = true
+        status.Text = "Rage category unlocked. Toggle is visual-only."
     else
         status.Text = "Incorrect key. Try again."
     end
 end)
 
-rageButton.MouseButton1Click:Connect(function()
+rageToggle.MouseButton1Click:Connect(function()
     rageEnabled = not rageEnabled
     if rageEnabled then
-        rageButton.Text = "RageMode: ON"
-        rageButton.BackgroundColor3 = Color3.fromRGB(155, 48, 90)
-        status.Text = "RageMode is ON (visual toggle only)."
+        rageToggle.Text = "RageMode: ON"
+        rageToggle.BackgroundColor3 = Color3.fromRGB(148, 47, 83)
+        status.Text = "RageMode ON (visual toggle only)."
     else
-        rageButton.Text = "RageMode: OFF"
-        rageButton.BackgroundColor3 = Color3.fromRGB(100, 52, 145)
-        status.Text = "RageMode is OFF."
+        rageToggle.Text = "RageMode: OFF"
+        rageToggle.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
+        status.Text = "RageMode OFF."
     end
 end)
 
--- Draggable on desktop and touch devices.
-local dragging = false
-local dragInput
-local dragStart
-local startPosition
-
+-- Drag the window using the top bar on mouse or touch.
+local dragging, dragInput, dragStart, startPosition
 top.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
@@ -190,9 +226,9 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if dragging and input == dragInput then
         local delta = input.Position - dragStart
-        main.Position = UDim2.new(
-            startPosition.X.Scale, startPosition.X.Offset + delta.X,
-            startPosition.Y.Scale, startPosition.Y.Offset + delta.Y
-        )
+        main.Position = UDim2.new(startPosition.X.Scale, startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale, startPosition.Y.Offset + delta.Y)
     end
 end)
+
+showRageCategory()
