@@ -23,8 +23,8 @@ gui.Parent = playerGui
 
 local main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.new(0, 470, 0, 315)
-main.Position = UDim2.new(0.5, -235, 0.5, -157)
+main.Size = UDim2.new(0, 500, 0, 390)
+main.Position = UDim2.new(0.5, -250, 0.5, -195)
 main.BackgroundColor3 = Color3.fromRGB(19, 17, 27)
 main.BorderSizePixel = 0
 main.Parent = gui
@@ -118,6 +118,9 @@ rageCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
 local antiAfkCategory = button(sidebar, "AntiAFKCategory", "ANTI-AFK",
     UDim2.new(1, -16, 0, 38), UDim2.new(0, 8, 0, 84))
 
+local testCategory = button(sidebar, "TestCategory", "10/10",
+    UDim2.new(1, -16, 0, 38), UDim2.new(0, 8, 0, 128))
+
 local content = Instance.new("Frame")
 content.Name = "CategoryContent"
 content.Size = UDim2.new(1, -160, 1, -54)
@@ -173,6 +176,44 @@ local antiAfkInfo = label(content, "AntiAFKInfo",
 antiAfkInfo.Visible = false
 local antiAfkEnabled = false
 
+-- Visual-only 10/10 panel. Do not enter real account tokens here.
+local testInfo = label(content, "TestInfo",
+    "UI MOCKUP ONLY. Do not paste real tokens; fields are not sent or saved.",
+    UDim2.new(1, -24, 0, 32), UDim2.new(0, 12, 0, 8), 10,
+    Color3.fromRGB(193, 178, 209))
+testInfo.Visible = false
+
+local tokenFields = {}
+for i = 1, 10 do
+    local col = (i - 1) % 2
+    local row = math.floor((i - 1) / 2)
+    local field = Instance.new("TextBox")
+    field.Name = "DemoTokenField" .. i
+    field.Size = UDim2.new(0.48, 0, 0, 26)
+    field.Position = UDim2.new(col * 0.52, 0, 0, 44 + row * 30)
+    field.BackgroundColor3 = Color3.fromRGB(39, 32, 49)
+    field.BorderSizePixel = 0
+    field.PlaceholderText = "Demo slot " .. i .. " (no real token)"
+    field.Text = ""
+    field.ClearTextOnFocus = false
+    field.TextColor3 = Color3.new(1, 1, 1)
+    field.PlaceholderColor3 = Color3.fromRGB(165, 151, 181)
+    field.TextSize = 10
+    field.Font = Enum.Font.Gotham
+    field.Parent = content
+    Instance.new("UICorner", field).CornerRadius = UDim.new(0, 6)
+    field.Visible = false
+    tokenFields[i] = field
+end
+
+local launchPreview = button(content, "LaunchPreviewButton", "Launch Preview (UI only)",
+    UDim2.new(1, -24, 0, 32), UDim2.new(0, 12, 0, 202))
+launchPreview.Visible = false
+launchPreview.MouseButton1Click:Connect(function()
+    status.Text = "Preview only — no accounts are connected or launched."
+end)
+
+
 local function showRageCategory()
     activeCategory = "Rage"
     rageCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
@@ -183,6 +224,10 @@ local function showRageCategory()
     rageToggle.Visible = unlocked
     antiAfkToggle.Visible = false
     antiAfkInfo.Visible = false
+    testInfo.Visible = false
+    launchPreview.Visible = false
+    for _, field in ipairs(tokenFields) do field.Visible = false end
+    testCategory.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
     if unlocked then
         status.Position = UDim2.new(0, 12, 0, 130)
         status.Text = "Rage tab selected. Toggle is visual-only."
@@ -201,6 +246,10 @@ local function showAntiAFKCategory()
     rageToggle.Visible = false
     antiAfkToggle.Visible = unlocked
     antiAfkInfo.Visible = unlocked
+    testInfo.Visible = false
+    launchPreview.Visible = false
+    for _, field in ipairs(tokenFields) do field.Visible = false end
+    testCategory.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
     status.Position = UDim2.new(0, 12, 0, 130)
     if unlocked then
         status.Text = "ANTI-AFK category selected."
@@ -209,15 +258,42 @@ local function showAntiAFKCategory()
     end
 end
 
+local function showTestCategory()
+    activeCategory = "10/10"
+    rageCategory.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
+    antiAfkCategory.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
+    testCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
+    status.Visible = true
+    keyBox.Visible = not unlocked
+    unlockButton.Visible = not unlocked
+    rageToggle.Visible = false
+    antiAfkToggle.Visible = false
+    antiAfkInfo.Visible = false
+    testInfo.Visible = unlocked
+    launchPreview.Visible = unlocked
+    for _, field in ipairs(tokenFields) do field.Visible = unlocked end
+    status.Position = UDim2.new(0, 12, 0, 130)
+    status.Text = unlocked and "10/10 preview selected. UI only." or "Enter the key to unlock panel controls."
+end
+
 rageCategory.MouseButton1Click:Connect(showRageCategory)
 antiAfkCategory.MouseButton1Click:Connect(showAntiAFKCategory)
+testCategory.MouseButton1Click:Connect(showTestCategory)
 
 unlockButton.MouseButton1Click:Connect(function()
     if keyBox.Text == ACCESS_KEY then
         unlocked = true
         keyBox.Visible = false
         unlockButton.Visible = false
-        if activeCategory == "ANTI-AFK" then
+        if activeCategory == "10/10" then
+            testInfo.Visible = true
+            launchPreview.Visible = true
+            for _, field in ipairs(tokenFields) do field.Visible = true end
+            rageToggle.Visible = false
+            antiAfkToggle.Visible = false
+            antiAfkInfo.Visible = false
+            status.Text = "10/10 preview unlocked. UI only; no accounts launched."
+        elseif activeCategory == "ANTI-AFK" then
             antiAfkToggle.Visible = true
             antiAfkInfo.Visible = true
             rageToggle.Visible = false
