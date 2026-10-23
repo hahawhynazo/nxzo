@@ -217,8 +217,17 @@ unlockButton.MouseButton1Click:Connect(function()
         unlocked = true
         keyBox.Visible = false
         unlockButton.Visible = false
-        rageToggle.Visible = true
-        status.Text = "Rage category unlocked. Toggle is visual-only."
+        if activeCategory == "ANTI-AFK" then
+            antiAfkToggle.Visible = true
+            antiAfkInfo.Visible = true
+            rageToggle.Visible = false
+            status.Text = "ANTI-AFK category unlocked. UI setting only."
+        else
+            rageToggle.Visible = true
+            antiAfkToggle.Visible = false
+            antiAfkInfo.Visible = false
+            status.Text = "Rage category unlocked. Toggle is visual-only."
+        end
     else
         status.Text = "Incorrect key. Try again."
     end
