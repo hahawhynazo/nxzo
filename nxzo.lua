@@ -115,6 +115,9 @@ local rageCategory = button(sidebar, "RageCategory", "Rage", UDim2.new(1, -16, 0
     UDim2.new(0, 8, 0, 40))
 rageCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
 
+local antiAfkCategory = button(sidebar, "AntiAFKCategory", "ANTI-AFK",
+    UDim2.new(1, -16, 0, 38), UDim2.new(0, 8, 0, 84))
+
 local content = Instance.new("Frame")
 content.Name = "CategoryContent"
 content.Size = UDim2.new(1, -160, 1, -54)
@@ -160,22 +163,54 @@ local rageToggle = button(content, "RageModeToggle", "RageMode: OFF",
     UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 164))
 rageToggle.Visible = false
 
+local antiAfkToggle = button(content, "AntiAFKToggle", "ANTI-AFK: OFF",
+    UDim2.new(1, -24, 0, 40), UDim2.new(0, 12, 0, 164))
+antiAfkToggle.Visible = false
+local antiAfkInfo = label(content, "AntiAFKInfo",
+    "This toggle is a UI setting only. It does not simulate clicks or prevent Roblox's idle kick.",
+    UDim2.new(1, -24, 0, 54), UDim2.new(0, 12, 0, 210), 11,
+    Color3.fromRGB(193, 178, 209))
+antiAfkInfo.Visible = false
+local antiAfkEnabled = false
+
 local function showRageCategory()
     activeCategory = "Rage"
     rageCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
+    antiAfkCategory.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
     status.Visible = true
     keyBox.Visible = not unlocked
     unlockButton.Visible = not unlocked
     rageToggle.Visible = unlocked
+    antiAfkToggle.Visible = false
+    antiAfkInfo.Visible = false
     if unlocked then
         status.Position = UDim2.new(0, 12, 0, 130)
         status.Text = "Rage tab selected. Toggle is visual-only."
     else
-        status.Text = "Enter the key to unlock Rage controls."
+        status.Text = "Enter the key to unlock panel controls."
+    end
+end
+
+local function showAntiAFKCategory()
+    activeCategory = "ANTI-AFK"
+    rageCategory.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
+    antiAfkCategory.BackgroundColor3 = Color3.fromRGB(105, 58, 142)
+    status.Visible = true
+    keyBox.Visible = not unlocked
+    unlockButton.Visible = not unlocked
+    rageToggle.Visible = false
+    antiAfkToggle.Visible = unlocked
+    antiAfkInfo.Visible = unlocked
+    status.Position = UDim2.new(0, 12, 0, 130)
+    if unlocked then
+        status.Text = "ANTI-AFK category selected."
+    else
+        status.Text = "Enter the key to unlock panel controls."
     end
 end
 
 rageCategory.MouseButton1Click:Connect(showRageCategory)
+antiAfkCategory.MouseButton1Click:Connect(showAntiAFKCategory)
 
 unlockButton.MouseButton1Click:Connect(function()
     if keyBox.Text == ACCESS_KEY then
@@ -199,6 +234,19 @@ rageToggle.MouseButton1Click:Connect(function()
         rageToggle.Text = "RageMode: OFF"
         rageToggle.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
         status.Text = "RageMode OFF."
+    end
+end)
+
+antiAfkToggle.MouseButton1Click:Connect(function()
+    antiAfkEnabled = not antiAfkEnabled
+    if antiAfkEnabled then
+        antiAfkToggle.Text = "ANTI-AFK: ON"
+        antiAfkToggle.BackgroundColor3 = Color3.fromRGB(148, 47, 83)
+        status.Text = "ANTI-AFK UI setting ON; no automated input is sent."
+    else
+        antiAfkToggle.Text = "ANTI-AFK: OFF"
+        antiAfkToggle.BackgroundColor3 = Color3.fromRGB(75, 49, 99)
+        status.Text = "ANTI-AFK UI setting OFF."
     end
 end)
 
